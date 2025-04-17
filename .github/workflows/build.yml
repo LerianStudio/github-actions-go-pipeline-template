@@ -1,0 +1,81 @@
+name: "Build Pipeline"
+
+# This reusable workflow handles Docker image building and publishing
+# It builds the Docker image and pushes it to the configured registry
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        description: 'Application name'
+        required: true
+        type: string
+      docker_registry:
+        description: 'Docker registry to push to'
+        required: false
+        type: string
+        default: 'docker.io'
+    secrets:
+      docker_username:
+        required: true
+      docker_password:
+        required: true
+      docker_access_token:
+        required: true
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-24.04
+    steps:
+      # Login to Docker registry
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.docker_registry }}
+          username: ${{ secrets.docker_username }}
+          password: ${{ secrets.docker_password }}
+
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Extract metadata for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ inputs.docker_registry }}/${{ secrets.docker_username }}/${{ inputs.app_name }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=ref,event=branch
+            type=sha
+
+      # Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ inputs.docker_registry }}/${{ secrets.docker_username }}/${{ inputs.app_name }}:buildcache
+          cache-to: type=registry,ref=${{ inputs.docker_registry }}/${{ secrets.docker_username }}/${{ inputs.app_name }}:buildcache,mode=max
+
+      # Scan the Docker image for vulnerabilities
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ inputs.docker_registry }}/${{ secrets.docker_username }}/${{ inputs.app_name }}:${{ github.ref_name }}
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'  # Don't fail the build, just report

@@ -1,0 +1,122 @@
+name: "Go Combined Analysis"
+
+# This reusable workflow handles code quality checks for Go applications
+# It runs golangci-lint, gosec security scanner, and unit/integration tests
+
+on:
+  workflow_call:
+    secrets:
+      lerian_studio_push_bot_app_id:
+        required: true
+      lerian_studio_push_bot_private_key:
+        required: true
+      lerian_ci_cd_user_gpg_key:
+        required: true
+      lerian_ci_cd_user_gpg_key_password:
+        required: true
+      lerian_ci_cd_user_name:
+        required: true
+      lerian_ci_cd_user_email:
+        required: true
+    inputs:
+      go_version:
+        description: 'Go version to use'
+        type: string
+        default: '1.23'
+      golangci_lint_version:
+        description: 'GolangCI-Lint version to use'
+        type: string
+        default: 'v2.0.2'
+
+jobs:
+  GoLangCI-Lint:
+    name: Run GoLangCI-Lint
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Using GolangCI-Lint Module
+      - name: Run GoLangCI Lint
+        uses: LerianStudio/github-actions-golangci-lint@main
+        with:
+          lerian_studio_midaz_push_bot_app_id: ${{ secrets.lerian_studio_push_bot_app_id }}
+          lerian_studio_midaz_push_bot_private_key: ${{ secrets.lerian_studio_push_bot_private_key }}
+          lerian_ci_cd_user_gpg_key: ${{ secrets.lerian_ci_cd_user_gpg_key }}
+          lerian_ci_cd_user_gpg_key_password: ${{ secrets.lerian_ci_cd_user_gpg_key_password }}
+          lerian_ci_cd_user_name: ${{ secrets.lerian_ci_cd_user_name }}
+          lerian_ci_cd_user_email: ${{ secrets.lerian_ci_cd_user_email }}
+          go_version: ${{ inputs.go_version }}
+          github_token: ${{ github.token }}
+          golangci_lint_version: ${{ inputs.golangci_lint_version }}
+
+  GoSec:
+    name: Run GoSec Security Scanner
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go_version }}
+          cache: false
+
+      # Run gosec security scanner to identify security issues in Go code
+      - name: Gosec Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go_version }}
+          cache: false
+
+      # Run unit tests using the Makefile
+      - name: Unit Tests
+        shell: bash
+        run: make test
+
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      # Set up environment files if needed
+      - name: Setup .env files
+        run: make set-env
+        continue-on-error: true
+      
+      # Create Docker network if needed
+      - name: Create External Network if not exists
+        run: |
+          docker network ls | grep app-network || docker network create app-network
+        continue-on-error: true
+
+      # Start Docker services for integration tests
+      - name: Start Docker Compose Services
+        run: make up
+        continue-on-error: true
+
+      # Wait for services to be ready
+      - name: Wait for services to be ready
+        run: sleep 10
+        timeout-minutes: 2
+
+      # Run integration tests if applicable
+      - name: Run Integration Tests
+        run: make integration-test
+        continue-on-error: true
