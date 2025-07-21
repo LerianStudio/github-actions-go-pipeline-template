@@ -1,8 +1,5 @@
 name: "Go Combined Analysis"
 
-# This reusable workflow handles code quality checks for Go applications
-# It runs golangci-lint, gosec security scanner, and unit/integration tests
-
 on:
   workflow_call:
     secrets:
@@ -36,7 +33,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Using GolangCI-Lint Module
       - name: Run GoLangCI Lint
         uses: LerianStudio/github-actions-golangci-lint@main
         with:
@@ -54,14 +50,34 @@ jobs:
     name: Run GoSec Security Scanner
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.lerian_studio_push_bot_app_id }}
+          private-key: ${{ secrets.lerian_studio_push_bot_private_key }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go_version }}
           cache: false
 
-      # Run gosec security scanner to identify security issues in Go code
+      - name: Configure Git and Go Environment for Private Modules
+        shell: bash
+        run: |
+          git config --global url."https://${{ steps.app-token.outputs.token }}@github.com".insteadOf "https://github.com"
+          echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GOPROXY=direct" >> $GITHUB_ENV
+
+      - name: Download Go Modules
+        shell: bash
+        run: go mod download
+
       - name: Gosec Scanner
         uses: securego/gosec@master
         with:
@@ -78,7 +94,6 @@ jobs:
           go-version: ${{ inputs.go_version }}
           cache: false
 
-      # Run unit tests using the Makefile
       - name: Unit Tests
         shell: bash
         run: make test
@@ -95,28 +110,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # Set up environment files if needed
       - name: Setup .env files
         run: make set-env
         continue-on-error: true
       
-      # Create Docker network if needed
       - name: Create External Network if not exists
         run: |
           docker network ls | grep app-network || docker network create app-network
         continue-on-error: true
 
-      # Start Docker services for integration tests
       - name: Start Docker Compose Services
         run: make up
         continue-on-error: true
 
-      # Wait for services to be ready
       - name: Wait for services to be ready
         run: sleep 10
         timeout-minutes: 2
 
-      # Run integration tests if applicable
       - name: Run Integration Tests
         run: make integration-test
         continue-on-error: true
