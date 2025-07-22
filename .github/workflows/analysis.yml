@@ -64,13 +64,15 @@ jobs:
 
       - name: Configure Go environment and netrc for private modules
         shell: bash
+        env:
+          MANAGE_TOKEN: ${{ secrets.manage_token }}
         run: |
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
-
-          if [ -n "${{ secrets.manage_token }}" ]; then
-            echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
+    
+          if [ -n "$MANAGE_TOKEN" ]; then
+            echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > ~/.netrc
             chmod 600 ~/.netrc
           fi
 
