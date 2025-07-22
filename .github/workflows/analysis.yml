@@ -64,26 +64,35 @@ jobs:
 
       - name: Configure Go environment and netrc for private modules
         shell: bash
+        env:
+          MANAGE_TOKEN: ${{ secrets.manage_token }}
         run: |
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
-
-          if [ -n "${{ secrets.manage_token }}" ]; then
-            echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
+    
+          if [ -n "$MANAGE_TOKEN" ]; then
+            echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > ~/.netrc
             chmod 600 ~/.netrc
           else
             echo "⚠️ MANAGE_TOKEN não definido. Imports privados podem falhar."
           fi
-
+    
       - name: Download Go Modules
         shell: bash
         run: go mod download
-
+    
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+    
       - name: Run Gosec Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./...
+        env:
+          GOPRIVATE: github.com/LerianStudio/*
+          GONOSUMDB: github.com/LerianStudio/*
+          GOPROXY: direct
+        run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          gosec ./...
 
   unit-tests:
     name: Run Unit Tests
