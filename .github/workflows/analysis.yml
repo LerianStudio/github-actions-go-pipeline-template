@@ -47,6 +47,7 @@ jobs:
           go_version: ${{ inputs.go_version }}
           github_token: ${{ github.token }}
           golangci_lint_version: ${{ inputs.golangci_lint_version }}
+          manage_token: ${{ secrets.manage_token }}
 
   GoSec:
     name: Run GoSec Security Scanner
