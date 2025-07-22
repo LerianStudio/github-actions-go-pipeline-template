@@ -70,11 +70,12 @@ jobs:
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
-    
+
           if [ -n "$MANAGE_TOKEN" ]; then
             echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > ~/.netrc
             chmod 600 ~/.netrc
-          fi
+          else
+            echo "⚠️ MANAGE_TOKEN não definido. Imports privados podem falhar."
 
       - name: Download Go Modules
         shell: bash
@@ -115,7 +116,7 @@ jobs:
       - name: Setup .env files
         run: make set-env
         continue-on-error: true
-      
+
       - name: Create External Network if not exists
         run: |
           docker network ls | grep app-network || docker network create app-network
