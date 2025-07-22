@@ -104,6 +104,18 @@ jobs:
         with:
           go-version: ${{ inputs.go_version }}
           cache: false
+      
+      - name: Configure Go environment and netrc for private modules
+        shell: bash
+        env:
+          MANAGE_TOKEN: ${{ secrets.manage_token }}
+        run: |
+          echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GOPROXY=direct" >> $GITHUB_ENV
+  
+          echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > "$HOME/.netrc"
+          chmod 600 "$HOME/.netrc"
 
       - name: Unit Tests
         shell: bash
