@@ -4,7 +4,7 @@ on:
   workflow_call:
     secrets:
       manage_token:
-        required: true
+        required: false
       lerian_studio_push_bot_app_id:
         required: true
       lerian_studio_push_bot_private_key:
@@ -69,8 +69,10 @@ jobs:
           echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
 
-          echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
-          chmod 600 ~/.netrc
+          if [ -n "${{ secrets.manage_token }}" ]; then
+            echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
+            chmod 600 ~/.netrc
+          fi
 
       - name: Download Go Modules
         shell: bash
