@@ -3,6 +3,8 @@ name: "Go Combined Analysis"
 on:
   workflow_call:
     secrets:
+      manage_token:
+        required: true
       lerian_studio_push_bot_app_id:
         required: true
       lerian_studio_push_bot_private_key:
