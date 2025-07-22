@@ -77,6 +77,7 @@ jobs:
           else
             echo "⚠️ MANAGE_TOKEN não definido. Imports privados podem falhar."
           fi
+          
       - name: Download Go Modules
         shell: bash
         run: go mod download
