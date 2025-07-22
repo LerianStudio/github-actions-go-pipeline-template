@@ -55,32 +55,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Create GitHub App Token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.lerian_studio_push_bot_app_id }}
-          private-key: ${{ secrets.lerian_studio_push_bot_private_key }}
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ inputs.go_version }}
           cache: false
 
-      - name: Configure Git and Go Environment for Private Modules
+      - name: Configure Go environment and netrc for private modules
         shell: bash
         run: |
-          git config --global url."https://${{ steps.app-token.outputs.token }}@github.com".insteadOf "https://github.com"
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
+
+          echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
+          chmod 600 ~/.netrc
 
       - name: Download Go Modules
         shell: bash
         run: go mod download
 
-      - name: Gosec Scanner
+      - name: Run Gosec Scanner
         uses: securego/gosec@master
         with:
           args: ./...
