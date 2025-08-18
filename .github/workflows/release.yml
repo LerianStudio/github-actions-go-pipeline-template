@@ -48,12 +48,12 @@ jobs:
 
       # Checkout repository with shallow clone
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Ensure we get the full git history including tags
 
       # Checkout again with the app token for authentication
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
