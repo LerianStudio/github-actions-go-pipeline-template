@@ -28,6 +28,11 @@ on:
         type: string
         default: '23.0.8'
 
+permissions:
+  contents: write
+  packages: read
+  pull-requests: write
+
 jobs:
   publish_release:
     runs-on: ubuntu-24.04
@@ -72,10 +77,13 @@ jobs:
           git_commit_gpgsign: true
 
       - name: Create .npmrc for GitHub Packages
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # ou um PAT com read:packages
         run: |
-          echo "@lerianstudio:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
-          npm config set always-auth true
+          echo "@lerianstudio:registry=https://npm.pkg.github.com" > "$HOME/.npmrc"
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
+          echo "always-auth=true" >> "$HOME/.npmrc"
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
