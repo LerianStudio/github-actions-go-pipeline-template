@@ -77,10 +77,12 @@ jobs:
       - name: Create .npmrc for GitHub Packages
         shell: bash
         env:
-          NODE_AUTH_TOKEN: ${{ steps.app-token.outputs.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_USERCONFIG: $HOME/.npmrc
         run: |
-          echo "@lerianstudio:registry=https://npm.pkg.github.com" > ./.npmrc
-          echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ./.npmrc
+          echo "@lerianstudio:registry=https://npm.pkg.github.com" > "$HOME/.npmrc"
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
+          echo "always-auth=true" >> "$HOME/.npmrc"
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
