@@ -28,11 +28,6 @@ on:
         type: string
         default: '23.0.8'
 
-permissions:
-  contents: write
-  packages: read
-  pull-requests: write
-
 jobs:
   publish_release:
     runs-on: ubuntu-24.04
