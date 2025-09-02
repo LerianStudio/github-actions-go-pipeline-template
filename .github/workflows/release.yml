@@ -83,7 +83,6 @@ jobs:
         run: |
           echo "@lerianstudio:registry=https://npm.pkg.github.com" > "$HOME/.npmrc"
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
-          echo "always-auth=true" >> "$HOME/.npmrc"
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
