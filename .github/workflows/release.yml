@@ -81,8 +81,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }} 
         run: |
-          echo "@lerianstudio:registry=https://npm.pkg.github.com" > "$HOME/.npmrc"
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
+          echo "@lerianstudio:registry=https://npm.pkg.github.com" > ./.npmrc
+          echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> ./.npmrc
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
