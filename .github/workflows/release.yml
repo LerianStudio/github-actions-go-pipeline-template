@@ -18,6 +18,8 @@ on:
         required: true
       lerian_ci_cd_user_email:
         required: true
+      gh_pat_for_packages:
+        required: true
     inputs:
       go_version:
         description: 'Go version to use'
@@ -74,15 +76,8 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
 
-      - name: Create .npmrc for GitHub Packages
-        shell: bash
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_USERCONFIG: $HOME/.npmrc
-        run: |
-          echo "@lerianstudio:registry=https://npm.pkg.github.com" > "$HOME/.npmrc"
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
-          echo "always-auth=true" >> "$HOME/.npmrc"
+      - name: set up npmrc
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.gh_pat_for_packges }}" > ~/.npmrc
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
