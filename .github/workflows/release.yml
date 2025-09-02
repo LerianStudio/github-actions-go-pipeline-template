@@ -77,7 +77,7 @@ jobs:
           git_commit_gpgsign: true
 
       - name: set up npmrc
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.gh_pat_for_packges }}" > ~/.npmrc
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.gh_pat_for_packages }}" > ~/.npmrc
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json
