@@ -105,7 +105,7 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ secrets.lerian_ci_cd_user_email }}
 
       # Setup Go for any post-release tasks
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ inputs.go_version }}
           cache: false
