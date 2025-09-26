@@ -64,22 +64,35 @@ jobs:
 
       - name: Configure Go environment and netrc for private modules
         shell: bash
+        env:
+          MANAGE_TOKEN: ${{ secrets.manage_token }}
         run: |
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*,github.com/securego/gosec/v2" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
-
-          echo -e "machine github.com\nlogin oauth2\npassword ${{ secrets.manage_token }}" > ~/.netrc
-          chmod 600 ~/.netrc
-
+    
+          if [ -n "$MANAGE_TOKEN" ]; then
+            echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > ~/.netrc
+            chmod 600 ~/.netrc
+          else
+            echo "⚠️ MANAGE_TOKEN não definido. Imports privados podem falhar."
+          fi
+    
       - name: Download Go Modules
         shell: bash
         run: go mod download
-
+    
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+    
       - name: Run Gosec Scanner
-        uses: securego/gosec@master
-        with:
-          args: ./...
+        env:
+          GOPRIVATE: github.com/LerianStudio/*
+          GONOSUMDB: github.com/LerianStudio/*
+          GOPROXY: direct
+        run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          gosec ./...
 
   unit-tests:
     name: Run Unit Tests
@@ -91,6 +104,18 @@ jobs:
         with:
           go-version: ${{ inputs.go_version }}
           cache: false
+      
+      - name: Configure Go environment and netrc for private modules
+        shell: bash
+        env:
+          MANAGE_TOKEN: ${{ secrets.manage_token }}
+        run: |
+          echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GOPROXY=direct" >> $GITHUB_ENV
+  
+          echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > "$HOME/.netrc"
+          chmod 600 "$HOME/.netrc"
 
       - name: Unit Tests
         shell: bash
@@ -111,7 +136,7 @@ jobs:
       - name: Setup .env files
         run: make set-env
         continue-on-error: true
-      
+
       - name: Create External Network if not exists
         run: |
           docker network ls | grep app-network || docker network create app-network
