@@ -18,6 +18,8 @@ on:
         required: true
       lerian_ci_cd_user_email:
         required: true
+      gh_pat_for_packages:
+        required: true
     inputs:
       go_version:
         description: 'Go version to use'
@@ -27,6 +29,9 @@ on:
         description: 'Semantic release version to use'
         type: string
         default: '23.0.8'
+
+permissions:
+  packages: read
 
 jobs:
   publish_release:
@@ -45,12 +50,6 @@ jobs:
         with:
           app-id: ${{ secrets.lerian_studio_push_bot_app_id }}
           private-key: ${{ secrets.lerian_studio_push_bot_private_key }}
-
-      # Checkout repository with shallow clone
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Ensure we get the full git history including tags
 
       # Checkout again with the app token for authentication
       - uses: actions/checkout@v4
@@ -76,6 +75,9 @@ jobs:
           git_config_global: true
           git_user_signingkey: true
           git_commit_gpgsign: true
+
+      - name: set up npmrc
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.gh_pat_for_packages }}" > ~/.npmrc
       
       # Initialize package.json if it doesn't exist
       - name: Init package.json

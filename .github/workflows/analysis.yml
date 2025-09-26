@@ -68,7 +68,7 @@ jobs:
           MANAGE_TOKEN: ${{ secrets.manage_token }}
         run: |
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
-          echo "GONOSUMDB=github.com/LerianStudio/*" >> $GITHUB_ENV
+          echo "GONOSUMDB=github.com/LerianStudio/*,github.com/securego/gosec/v2" >> $GITHUB_ENV
           echo "GOPROXY=direct" >> $GITHUB_ENV
     
           if [ -n "$MANAGE_TOKEN" ]; then
