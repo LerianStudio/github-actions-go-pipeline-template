@@ -41,6 +41,7 @@ jobs:
     env:
       GH_PACKAGES_TOKEN: ${{ secrets.gh_pat_for_packages }}
     outputs:
+      gpg_fingerprint: ${{ steps.import_gpg.outputs.fingerprint }}
     steps:
       # Generate GitHub App token for authentication
       - uses: actions/create-github-app-token@v1
