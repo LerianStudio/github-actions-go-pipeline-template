@@ -119,7 +119,7 @@ jobs:
 
       - name: Unit Tests
         shell: bash
-        run: make test
+        run: make test-unit
 
   integration-tests:
     name: Run Integration Tests
@@ -151,5 +151,5 @@ jobs:
         timeout-minutes: 2
 
       - name: Run Integration Tests
-        run: make integration-test
+        run: make test-integration
         continue-on-error: true
