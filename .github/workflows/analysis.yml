@@ -67,29 +67,37 @@ jobs:
         env:
           MANAGE_TOKEN: ${{ secrets.manage_token }}
         run: |
+          # Configura módulos privados
           echo "GOPRIVATE=github.com/LerianStudio/*" >> $GITHUB_ENV
           echo "GONOSUMDB=github.com/LerianStudio/*,github.com/securego/gosec/v2" >> $GITHUB_ENV
-          echo "GOPROXY=direct" >> $GITHUB_ENV
-    
+
+          # Usa proxy oficial para módulos públicos
+          echo "GOPROXY=https://proxy.golang.org,direct" >> $GITHUB_ENV
+
+          # Configura netrc para acesso aos privados, se token existir
           if [ -n "$MANAGE_TOKEN" ]; then
             echo -e "machine github.com\nlogin oauth2\npassword $MANAGE_TOKEN" > ~/.netrc
             chmod 600 ~/.netrc
           else
             echo "⚠️ MANAGE_TOKEN não definido. Imports privados podem falhar."
           fi
-    
+
       - name: Download Go Modules
         shell: bash
-        run: go mod download
-    
+        run: |
+          export GOPROXY=https://proxy.golang.org,direct
+          export GOPRIVATE=github.com/LerianStudio/*
+          export GONOSUMDB=github.com/LerianStudio/*,github.com/securego/gosec/v2
+          go mod download
+
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
-    
+
       - name: Run Gosec Scanner
         env:
           GOPRIVATE: github.com/LerianStudio/*
           GONOSUMDB: github.com/LerianStudio/*
-          GOPROXY: direct
+          GOPROXY: https://proxy.golang.org,direct
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
           gosec ./...
