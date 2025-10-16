@@ -51,7 +51,7 @@ jobs:
           private-key: ${{ secrets.lerian_studio_push_bot_private_key }}
 
       # Checkout again with the app token for authentication
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
