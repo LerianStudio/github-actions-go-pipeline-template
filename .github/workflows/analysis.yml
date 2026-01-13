@@ -100,7 +100,17 @@ jobs:
           GOPROXY: https://proxy.golang.org,direct
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
-          gosec --exclude-dir=tools ./...
+          # Scan only main directories, excluding tools/ which may have separate go.mod
+          SCAN_PATHS=""
+          for dir in cmd components pkg internal; do
+            if [ -d "$dir" ]; then
+              SCAN_PATHS="$SCAN_PATHS ./$dir/..."
+            fi
+          done
+          if [ -z "$SCAN_PATHS" ]; then
+            SCAN_PATHS="./..."
+          fi
+          gosec --exclude-dir=tools --exclude-dir=vendor $SCAN_PATHS
 
   unit-tests:
     name: Run Unit Tests
