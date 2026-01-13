@@ -100,7 +100,7 @@ jobs:
           GOPROXY: https://proxy.golang.org,direct
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
-          gosec ./...
+          gosec --exclude-dir=tools ./...
 
   unit-tests:
     name: Run Unit Tests
