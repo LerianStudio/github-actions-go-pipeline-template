@@ -48,7 +48,7 @@ jobs:
       # Extract metadata for Docker
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ inputs.docker_registry }}/${{ secrets.docker_username }}/${{ inputs.app_name }}
           tags: |
