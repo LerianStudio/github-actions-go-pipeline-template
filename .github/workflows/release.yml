@@ -64,7 +64,7 @@ jobs:
 
       # Import GPG key for signing commits
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@v7
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.lerian_ci_cd_user_gpg_key }}
