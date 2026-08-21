@@ -32,22 +32,18 @@ jobs:
     name: Run GoLangCI-Lint
     runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Run GoLangCI Lint
-        uses: LerianStudio/github-actions-golangci-lint@main
+        uses: LerianStudio/github-actions-shared-workflows/src/lint/golangci-lint@v1.57.0
         with:
-          lerian_studio_midaz_push_bot_app_id: ${{ secrets.lerian_studio_push_bot_app_id }}
-          lerian_studio_midaz_push_bot_private_key: ${{ secrets.lerian_studio_push_bot_private_key }}
-          lerian_ci_cd_user_gpg_key: ${{ secrets.lerian_ci_cd_user_gpg_key }}
-          lerian_ci_cd_user_gpg_key_password: ${{ secrets.lerian_ci_cd_user_gpg_key_password }}
-          lerian_ci_cd_user_name: ${{ secrets.lerian_ci_cd_user_name }}
-          lerian_ci_cd_user_email: ${{ secrets.lerian_ci_cd_user_email }}
-          go_version: ${{ inputs.go_version }}
-          github_token: ${{ github.token }}
-          golangci_lint_version: ${{ inputs.golangci_lint_version }}
-          manage_token: ${{ secrets.manage_token }}
+          lerian-studio-push-bot-app-id: ${{ secrets.lerian_studio_push_bot_app_id }}
+          lerian-studio-push-bot-private-key: ${{ secrets.lerian_studio_push_bot_private_key }}
+          lerian-ci-cd-user-gpg-key: ${{ secrets.lerian_ci_cd_user_gpg_key }}
+          lerian-ci-cd-user-gpg-key-password: ${{ secrets.lerian_ci_cd_user_gpg_key_password }}
+          lerian-ci-cd-user-name: ${{ secrets.lerian_ci_cd_user_name }}
+          lerian-ci-cd-user-email: ${{ secrets.lerian_ci_cd_user_email }}
+          go-version: ${{ inputs.go_version }}
+          golangci-lint-version: ${{ inputs.golangci_lint_version }}
+          manage-token: ${{ secrets.manage_token }}
 
   GoSec:
     name: Run GoSec Security Scanner
